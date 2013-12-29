@@ -1,0 +1,9 @@
+[submodule "presentation"]
+	path = presentation
+	url = https://github.com/arrancar-technology/akatsuki-presentation.git
+[submodule "presentation-functional"]
+	path = presentation-functional
+	url = https://github.com/arrancar-technology/akatsuki-presentation-functional.git
+[submodule "presentation-stubulator"]
+	path = presentation-stubulator
+	url = https://github.com/arrancar-technology/akatsuki-presentation-stubulator.git

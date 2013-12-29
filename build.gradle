@@ -1,0 +1,55 @@
+version = "0.0.1"
+
+evaluationDependsOn(':presentation')
+project(':presentation') {
+  Process processPresentation = null
+  Process processPresentationStubulator = null
+  def threads = []
+
+  task appStartUnblocking() << {
+    println "starting server(s)..."
+    threads << new Thread({
+      processPresentation = "env PORT=5000 node ../presentation/server.js".execute()
+      processPresentation.consumeProcessOutput(System.out, System.err)
+      println "${processPresentation.err.text}"
+    })
+    threads << new Thread({
+      processPresentationStubulator = "env PORT=5001 node ../presentation-stubulator/server.js".execute()
+      processPresentationStubulator.consumeProcessOutput(System.out, System.err)
+      println "${processPresentationStubulator.err.text}"
+    })
+    threads.each { it.start() }
+  }
+
+  task appStart() << {
+    project(':presentation').tasks.appStartUnblocking.execute()
+    processPresentation.consumeProcessOutput(System.out, System.err)
+    processPresentationStubulator.consumeProcessOutput(System.out, System.err)
+    threads.each { it.join() }
+  }
+
+  task appStop() << {
+    println "stopping server(s)..."
+    processPresentation.destroy()
+    processPresentationStubulator.destroy()
+    println "stopped server(s)..."
+  }
+}
+
+
+evaluationDependsOn(':presentation-functional')
+project(':presentation-functional') {
+  def testTasks = ['test', 'testHeadless']
+
+  if(!System.getProperty("geb.env")) {
+    testTasks.each { testTask ->
+      project(':presentation-functional').tasks."$testTask".doFirst {
+        project(':presentation').tasks.appStartUnblocking.execute()
+      }
+
+      project(':presentation-functional').tasks."$testTask".doLast {
+        project(':presentation').tasks.appStop.execute()
+      }
+    }
+  }
+}
