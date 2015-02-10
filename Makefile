@@ -41,6 +41,12 @@ test-app:
 test-app-ci:
 	cd presentation-functional && make test-app-ci
 
+deploy-to-functional:
+	cd presentation && git push func01 ft-web-design-simple-bootstrap:master
+
+deploy-to-demo:
+	cd presentation && git push demo01 ft-web-design-simple-bootstrap:master
+
 ide-idea-clean:
 	rm -rf *iml
 	rm -rf .idea*
